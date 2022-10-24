@@ -8,7 +8,7 @@ workflows:
       groups:
         - admin
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
@@ -31,13 +31,12 @@ workflows:
   debug-ios-android-workflow:
     name: Extract android APK and update IOS to testflight
     environment:
-      ndk: r22b
-      java: 1.8
+      java: 11
       groups:
         - admin
       vars:
 
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
@@ -95,7 +94,7 @@ workflows:
         script: |
                   cd android
                   chmod +x gradlew
-                  ./gradlew assembleDebug
+                  ./gradlew assemble
 
     artifacts:
         - build/ios/ipa/*.ipa
@@ -148,7 +147,7 @@ workflows:
         script: |
                   cd android
                   chmod +x gradlew
-                  ./gradlew assemble
+                  ./gradlew assemble 
 
     artifacts:
         - android/app/build/outputs/**/**/*.apk
@@ -168,7 +167,7 @@ workflows:
       groups:
         - admin
       vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
         XCODE_SCHEME: "App"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
