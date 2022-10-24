@@ -148,7 +148,7 @@ workflows:
         script: |
                   cd android
                   chmod +x gradlew
-                  ./gradlew assembleDebug
+                  ./gradlew assemble
 
     artifacts:
         - android/app/build/outputs/**/**/*.apk
