@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "allowJs": true,
+        "checkJs": false,
+        "jsx": "react",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
+    }
+}
