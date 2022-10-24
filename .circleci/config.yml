@@ -111,7 +111,7 @@ jobs:
   android-build-and-test:
     working_directory: ~/react-native-redux-template/android
     docker:
-      - image: circleci/android:api-31-node
+      - image: circleci/android:api-30-node
     steps:
       - checkout:
           path: ~/react-native-redux-template
@@ -148,7 +148,7 @@ workflows:
       - android-build-and-test:
           requires:
             - node
-      - macos-build-and-test:
-          requires:
-            - node
+      #- macos-build-and-test:
+      #    requires:
+      #      - node
             
