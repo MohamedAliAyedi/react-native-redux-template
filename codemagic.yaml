@@ -57,7 +57,7 @@ workflows:
 
       - name: Cocoapods installation
         script: |
-            cd ios/App && pod install
+            cd ios && pod install
 
       - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
         script: |
@@ -214,7 +214,7 @@ workflows:
 
       - name: Cocoapods installation
         script: |
-            cd ios/App && pod install
+            cd ios && pod install
 
       - name: Update dependencies and copy web assets to native project
         script: |
