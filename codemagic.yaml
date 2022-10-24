@@ -1,0 +1,270 @@
+workflows:
+  # admin <-- (Includes APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY, CERTIFICATE_PRIVATE_KEY)
+
+  # this workflow run only whene merge or commit in main
+  release-workflow:
+    name: Upload to apple store and Google Store
+    environment:
+      groups:
+        - admin
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
+        node: 16.13.0
+        npm: latest
+        xcode: latest
+        cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    scripts:
+      - name: Hello World
+        script: |
+            echo "Hello World !"
+
+  # this workflow run only whene merge or commit in TEST-ENV
+  debug-ios-android-workflow:
+    name: Extract android APK and update IOS to testflight
+    environment:
+      ndk: r22b
+      java: 1.8
+      groups:
+        - admin
+      vars:
+
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
+        node: 16.13.0
+        npm: latest
+        xcode: latest
+        cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: dev
+          include: true
+          source: true
+    scripts:
+      - name: Install npm dependencies for React native project
+        script: |
+            yarn
+
+      - name: Cocoapods installation
+        script: |
+            cd ios/App && pod install
+
+      - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
+        script: |
+              keychain initialize
+            
+      - name: Fetch signing files
+        script: |
+              app-store-connect fetch-signing-files "com.whitelabel.dev" --type IOS_APP_STORE --create
+
+      - name: Add certificates to keychain
+        script: |
+            keychain add-certificates
+
+      - name: Increment build number
+        script: |
+          #!/bin/sh
+          set -e
+          set -x
+          cd $FCI_BUILD_DIR/ios/App
+          agvtool new-version -all $(($BUILD_NUMBER + 1))  
+
+      - name: Set up code signing settings on Xcode project
+        script: |
+                    xcode-project use-profiles
+
+      - name: Build ipa for distribution
+        script: |
+                    xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+      - name: Set Android SDK location
+        script: |
+                  echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+
+      - name: Build Android APK
+        script: |
+                  cd android
+                  chmod +x gradlew
+                  ./gradlew assembleDebug
+
+    artifacts:
+        - build/ios/ipa/*.ipa
+        - android/app/build/outputs/**/**/*.apk
+
+    publishing:
+      app_store_connect:
+          api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+          submit_to_testflight: true 
+      email:
+        recipients:
+          - mohamed.ali.ayedi.b@gmail.com
+        notify:
+          success: false
+          failure: false
+
+
+
+  # this workflow run only whene merge or commit
+  debug-android-workflow:
+    name: Extract android APK and update IOS to testflight
+    environment:
+      ndk: r22b
+      java: 1.8
+      groups:
+        - admin
+      vars:
+
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
+        node: 16.13.0
+        npm: latest
+        xcode: latest
+        cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: dev-8
+          include: true
+          source: true
+    scripts:
+      - name: Install npm dependencies for React native project
+        script: |
+            yarn
+
+      - name: Set Android SDK location
+        script: |
+                  echo "sdk.dir=$ANDROID_SDK_ROOT" > "$FCI_BUILD_DIR/android/local.properties"
+
+      - name: Build Android APK
+        script: |
+                  cd android
+                  chmod +x gradlew
+                  ./gradlew assembleDebug
+
+    artifacts:
+        - android/app/build/outputs/**/**/*.apk
+
+    publishing:
+      email:
+        recipients:
+          - mohamed.ali.ayedi.b@gmail.com
+        notify:
+          success: false
+          failure: false
+
+  # that workflow run at any Branch created or commit pushed in branch
+  debug-workflow:
+    name: iOS upload to testflight
+    environment:
+      groups:
+        - admin
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
+        node: 16.13.0
+        npm: latest
+        xcode: latest
+        cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'ci*'
+          include: true
+          source: true
+        - pattern: 'feat*'
+          include: true
+          source: true
+        - pattern: 'fix*'
+          include: true
+          source: true
+        - pattern: 'ref*'
+          include: true
+          source: true
+        - pattern: 'hotfix*'
+          include: true
+          source: true
+        - pattern: 'chore*'
+          include: true
+          source: true
+        - pattern: 'test*'
+          include: true
+          source: true
+        - pattern: 'docs*'
+          include: true
+          source: true
+
+    scripts:
+      - name: Install npm dependencies for Ionic project
+        script: |
+            npm install --force
+
+      - name: Generate Web folder
+        script: |
+            ionic build
+
+      - name: Cocoapods installation
+        script: |
+            cd ios/App && pod install
+
+      - name: Update dependencies and copy web assets to native project
+        script: |
+            npx cap sync
+
+      - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
+        script: |
+              keychain initialize
+            
+      - name: Fetch signing files
+        script: |
+              app-store-connect fetch-signing-files "com.whitelabel.dev" --type IOS_APP_STORE --create
+
+      - name: Add certificates to keychain
+        script: |
+            keychain add-certificates
+
+      - name: Increment build number
+        script: |
+          #!/bin/sh
+          set -e
+          set -x
+          cd $FCI_BUILD_DIR/ios/App
+          agvtool new-version -all $(($BUILD_NUMBER + 1))  
+
+      - name: Set up code signing settings on Xcode project
+        script: |
+                    xcode-project use-profiles
+
+      - name: Build ipa for distribution
+        script: |
+                    xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+    artifacts:
+        - build/ios/ipa/*.ipa
+        - android/app/build/outputs/**/**/*.apk
+    publishing:
+      app_store_connect:
+          api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+          submit_to_testflight: true          
+      email:
+        recipients:
+          - mohamed.ali.ayedi.b@gmail.com
+        notify:
+          success: false     # To not receive a notification when a build succeeds
+          failure: false     # To not receive a notification when a build fails

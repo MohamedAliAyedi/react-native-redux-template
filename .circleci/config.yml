@@ -45,6 +45,14 @@ jobs:
       - store_artifacts:
           path: test-results
 
+  ## Dependencies
+  install_ruby_dependencies: &install_ruby_dependencies
+    run:
+      name: Download Ruby Dependencies
+      command: |
+        gem install bundler:1.17.2
+        bundle check || bundle install --path vendor/bundle
+  
   macos-build-and-test:
     working_directory: ~/react-native-redux-template
     macos:
@@ -145,6 +153,7 @@ workflows:
   node-android-ios:
     jobs:
       - node
+      - *install_ruby_dependencies
       - android-build-and-test:
           requires:
             - node
