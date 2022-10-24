@@ -118,21 +118,16 @@ workflows:
 
   # this workflow run only whene merge or commit
   debug-android-workflow:
-    name: Extract android APK and update IOS to testflight
+    name: Extract android APK
     environment:
-      ndk: r22b
-      java: 1.8
+      java: 11
       groups:
         - admin
       vars:
 
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
         npm: latest
-        xcode: latest
-        cocoapods: default
     triggering:
       events:
         - push
