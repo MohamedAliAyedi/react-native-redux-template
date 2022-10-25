@@ -9,7 +9,7 @@ workflows:
         - admin
       vars:
         XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
-        XCODE_SCHEME: "App"
+        XCODE_SCHEME: "WhiteLabel"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
         npm: latest
@@ -37,7 +37,7 @@ workflows:
       vars:
 
         XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
-        XCODE_SCHEME: "App"
+        XCODE_SCHEME: "WhiteLabel"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
         npm: latest
@@ -57,7 +57,7 @@ workflows:
 
       - name: Cocoapods installation
         script: |
-            cd ios && pod install && cd .. && npx react-native link
+            cd ios && pod install
 
       - name: Set up keychain to be used for code signing using Codemagic CLI 'keychain' command
         script: |
@@ -168,7 +168,7 @@ workflows:
         - admin
       vars:
         XCODE_WORKSPACE: "ios/WhiteLabel.xcworkspace"
-        XCODE_SCHEME: "App"
+        XCODE_SCHEME: "WhiteLabel"
         BUNDLE_ID_IDENTIFIER: "com.whitelabel.dev"
         node: 16.13.0
         npm: latest
